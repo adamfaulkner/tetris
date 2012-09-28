@@ -95,7 +95,7 @@ define('state', [], function() {
 			// update piece position
 			py += 1;
 			var place;
-			if (coxliding()) {
+			if (coliding()) {
 				py -= 1;
 				place = true;
 			}
