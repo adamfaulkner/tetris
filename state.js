@@ -46,15 +46,39 @@ define('state', [], function() {
 				['#FFF', '#0F0', '#0F0']
 			]
 		];
-		
+
+		var make_rotates = function(piece, rotates) {
+			var new_piece = [];
+			// Loop through the rows, columns of the NEW piece
+			for (var i = 0; i < piece[0].length; i++) {
+				var new_row = [];
+				for (var j = 0; j < piece.length; j++) {
+					new_row.push(piece[piece.length - j - 1][i]);
+				}
+				new_piece.push(new_row);
+			}
+			if (rotates.length >= 4) {
+				return rotates;
+			} else {
+				rotates.push(new_piece);
+				return make_rotates(new_piece, rotates);
+			}
+		};
+
 		// Choose a random piece
 		var pick_piece = function() {
 			var index = Math.floor(Math.random() * pieces.length);
 			piece = pieces[index];
+			piece_rotates = make_rotates(piece, [piece]);
+			current_rotation = 0;
+			px = Math.min(px, gwidth - piece[0].length);
 		};
 
 		// Index into the pieces array
 		var piece;
+		var piece_rotates;
+		// Integer referring to current rotation
+		var current_rotation;
 		pick_piece();
 		var draw = function() {
 			var bwidth = width / gwidth;
@@ -135,6 +159,7 @@ define('state', [], function() {
 			if (coliding()) {
 				px -= 1;
 			}
+			draw();
 		};
 		var move_left = function() {
 			if (px > 0) {
@@ -143,6 +168,14 @@ define('state', [], function() {
 			if (coliding()) {
 				py -= 1;
 			}
+			draw();
+		};
+
+
+
+		var rotate = function() {
+			current_rotation = ++current_rotation % piece_rotates.length;
+			piece = piece_rotates[current_rotation];
 		};
 
 
@@ -152,6 +185,7 @@ define('state', [], function() {
 		this.update = update;
 		this.move_right = move_right;
 		this.move_left = move_left;
+		this.rotate = rotate;
 	}
 	return {Game: Game};
 });
