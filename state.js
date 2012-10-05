@@ -145,10 +145,11 @@ define('state', ['piece'], function(Piece) {
 
 		var clear_rows = function() {
 			// Look through widths, see if we should clear anything.
+			// Shift represents the line offset for where the next board will be
 			var shift = 0;
 			// go bottom up to avoid extra work
-			for (var i = widths.length - 1; i >= 0; i--) {
-				if (widths[i] >= gwidth) {
+			for (var i = widths.length; i >= 0; i--) {
+				while (widths[i - shift] >= gwidth) {
 					shift++;
 				}
 				if (shift) {
@@ -159,7 +160,10 @@ define('state', ['piece'], function(Piece) {
 						board[i] = new_row();
 						widths[i] = 0;
 					}
-				}
+				} /*else {
+					new_board[i] = board[i];
+					new_widths[i] = widths[i];
+				}*/
 			}
 		};
 				
