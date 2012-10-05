@@ -54,6 +54,7 @@ define('piece', [], function() {
 		piece_rotates = make_rotates(piece, [piece]);
 		current_rotation = 0;
 		px = Math.min(px, gwidth - piece[0].length);
+		return px;
 	};
 
 	var rotate = function() {

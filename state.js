@@ -8,12 +8,14 @@ define('state', ['piece'], function(Piece) {
 		var height = canvas.height;
 		var gwidth = 10;
 		var gheight = 22;
+		var widths = [];
 		for (var i = 0; i < gheight; i++) {
 			var row = [];
 			for (var j = 0; j < gwidth; j++) {
 				row.push("#FFF");
 			}
 			board.push(row);
+			widths.push(0);
 		}
 		var px = 0;
 		var py = 0;
@@ -57,11 +59,17 @@ define('state', ['piece'], function(Piece) {
 			// update piece position
 			py += 1;
 			var place;
+
+			if (py + Piece.piece().length > gheight) {
+				place = true;
+				py -= 1;
+			}
+
 			if (coliding()) {
 				py -= 1;
 				place = true;
 			}
-			place = place || py + Piece.piece().length >= gheight;
+
 			if (place) {
 				Piece.piece().forEach(function(row, i) {
 					row.forEach(function(cell, j) {
@@ -69,12 +77,15 @@ define('state', ['piece'], function(Piece) {
 							var y = py + i;
 							var x = px + j;
 							board[y][x] = cell;
+							// Row clearing logic
+							widths[y]++;
 						}
 					});
 				});
 				py = 0;
-				Piece.pick_piece(px, gwidth);
+				px = Piece.pick_piece(px, gwidth);
 			}
+			clear_rows();
 		};
 
 		var coliding = function() {
@@ -91,7 +102,7 @@ define('state', ['piece'], function(Piece) {
 		};
 					
 		var move_right = function() {
-			if (px + 1 + Piece.piece()[0].length < gwidth) {
+			if (px + Piece.piece()[0].length < gwidth) {
 				px += 1;
 			}
 			if (coliding()) {
@@ -110,18 +121,54 @@ define('state', ['piece'], function(Piece) {
 		};
 
 		var rotate = function() {
+			var old_px = px;
 			Piece.rotate();
 			if (px + Piece.piece()[0].length >= gwidth) {
 				px--;
 			}
+			if (coliding()) {
+				px = old_px;
+				Piece.rotate();
+				Piece.rotate();
+				Piece.rotate();
+			}
+			draw();
 		};
 
+		var new_row = function() {
+			var row = [];
+			for (var i = 0; i < gwidth; i++) {
+				row.push('#FFF');
+			}
+			return row;
+		};
+
+		var clear_rows = function() {
+			// Look through widths, see if we should clear anything.
+			var shift = 0;
+			// go bottom up to avoid extra work
+			for (var i = widths.length - 1; i >= 0; i--) {
+				if (widths[i] >= gwidth) {
+					shift++;
+				}
+				if (shift) {
+					if (i - shift >= 0) {
+						board[i] = board[i - shift];
+						widths[i] = widths[i - shift];
+					} else {
+						board[i] = new_row();
+						widths[i] = 0;
+					}
+				}
+			}
+		};
+				
 		this.board = board;
 		this.draw = draw;
 		this.update = update;
 		this.move_right = move_right;
 		this.move_left = move_left;
-		this.rotate = Piece.rotate;
+		this.rotate = rotate;
 	}
 	return {Game: Game};
 });
