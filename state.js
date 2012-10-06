@@ -192,7 +192,7 @@ define('state', ['piece'], function(Piece) {
 				}
 			}
 			// We didn't hit anything
-			py = gheight - piece_height - 1;
+			py = gheight - piece_height;
 			place();
 			debugger;
 			draw();
