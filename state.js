@@ -53,37 +53,40 @@ define('state', ['piece'], function(Piece) {
 			});
 		};
 
+		var place = function() {
+			Piece.piece().forEach(function(row, i) {
+				row.forEach(function(cell, j) {
+					if (cell != '#FFF') {
+						var y = py + i;
+						var x = px + j;
+						board[y][x] = cell;
+						// Row clearing logic
+						widths[y]++;
+					}
+				});
+			});
+			py = 0;
+			px = Piece.pick_piece(px, gwidth);
+		};
+			
 		// How far can each of the columns of the current piece go, relative to py?
-		var current_heights = [];
 		var update = function() {
 			// update piece position
 			py += 1;
-			var place;
+			var need_place;
 
 			if (py + Piece.piece().length > gheight) {
-				place = true;
+				need_place = true;
 				py -= 1;
 			}
 
 			if (coliding()) {
 				py -= 1;
-				place = true;
+				need_place = true;
 			}
 
-			if (place) {
-				Piece.piece().forEach(function(row, i) {
-					row.forEach(function(cell, j) {
-						if (cell != '#FFF') {
-							var y = py + i;
-							var x = px + j;
-							board[y][x] = cell;
-							// Row clearing logic
-							widths[y]++;
-						}
-					});
-				});
-				py = 0;
-				px = Piece.pick_piece(px, gwidth);
+			if (need_place) {
+				place();
 			}
 			clear_rows();
 		};
@@ -115,7 +118,7 @@ define('state', ['piece'], function(Piece) {
 				px -= 1;
 			}
 			if (coliding()) {
-				py -= 1;
+				px += 1;
 			}
 			draw();
 		};
@@ -166,13 +169,42 @@ define('state', ['piece'], function(Piece) {
 				}*/
 			}
 		};
-				
+
+		var drop = function() {
+			var bottoms = [];
+			var piece_height = Piece.piece().length;
+			for (var j = 0; j < Piece.piece()[0].length; j++) {
+				var i = piece_height - 1;
+				while(Piece.piece()[i][j] == '#FFF' && i >= 0) {
+					i--;
+				}
+				bottoms.push(i);
+			}
+			for (var i = py; i < gheight - piece_height; i++) {
+				for (var j = 0; j < Piece.piece()[0].length; j++) {
+					if (board[i + bottoms[j]][px + j] != '#FFF') {
+						py = i - 1;
+						debugger;
+						place();
+						draw();
+						return;
+				  }
+				}
+			}
+			// We didn't hit anything
+			py = gheight - piece_height - 1;
+			place();
+			debugger;
+			draw();
+		};
+
 		this.board = board;
 		this.draw = draw;
 		this.update = update;
 		this.move_right = move_right;
 		this.move_left = move_left;
 		this.rotate = rotate;
+		this.drop = drop;
 	}
 	return {Game: Game};
 });

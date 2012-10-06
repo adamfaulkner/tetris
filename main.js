@@ -10,6 +10,8 @@ define('main', ['state'], function(state) {
 		} else if (key.keyCode == 38) {
 			// up arrow key
 			game.rotate();
+		} else if (key.keyCode == 32){
+			game.drop();
 		}
 	};
 	game.draw();
