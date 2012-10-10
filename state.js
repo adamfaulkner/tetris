@@ -172,9 +172,9 @@ define('state', ['piece'], function(Piece) {
 
 		var drop = function() {
 			var bottoms = [];
-			var piece_height = Piece.piece().length;
+			var piece_height = Piece.piece().length - 1;
 			for (var j = 0; j < Piece.piece()[0].length; j++) {
-				var i = piece_height - 1;
+				var i = piece_height;
 				while(Piece.piece()[i][j] == '#FFF' && i >= 0) {
 					i--;
 				}
@@ -184,7 +184,6 @@ define('state', ['piece'], function(Piece) {
 				for (var j = 0; j < Piece.piece()[0].length; j++) {
 					if (board[i + bottoms[j]][px + j] != '#FFF') {
 						py = i - 1;
-						debugger;
 						place();
 						draw();
 						return;
@@ -192,9 +191,8 @@ define('state', ['piece'], function(Piece) {
 				}
 			}
 			// We didn't hit anything
-			py = gheight - piece_height;
+			py = gheight - piece_height - 1;
 			place();
-			debugger;
 			draw();
 		};
 
