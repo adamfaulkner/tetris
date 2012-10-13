@@ -2,8 +2,8 @@
 define('state', ['piece'], function(Piece) {
 	function Game(canvas) {
 		var board = [];
-		canvas.width = 300;
-		canvas.height = 660;
+		canvas.width = 150;
+		canvas.height = 330;
 		var width = canvas.width;
 		var height = canvas.height;
 		var gwidth = 10;
@@ -69,7 +69,6 @@ define('state', ['piece'], function(Piece) {
 			px = Piece.pick_piece(px, gwidth);
 		};
 			
-		// How far can each of the columns of the current piece go, relative to py?
 		var update = function() {
 			// update piece position
 			py += 1;
@@ -87,8 +86,8 @@ define('state', ['piece'], function(Piece) {
 
 			if (need_place) {
 				place();
+				clear_rows();
 			}
-			clear_rows();
 		};
 
 		var coliding = function() {
@@ -151,7 +150,7 @@ define('state', ['piece'], function(Piece) {
 			// Shift represents the line offset for where the next board will be
 			var shift = 0;
 			// go bottom up to avoid extra work
-			for (var i = widths.length; i >= 0; i--) {
+			for (var i = widths.length - 1; i >= 0; i--) {
 				while (widths[i - shift] >= gwidth) {
 					shift++;
 				}
@@ -163,10 +162,7 @@ define('state', ['piece'], function(Piece) {
 						board[i] = new_row();
 						widths[i] = 0;
 					}
-				} /*else {
-					new_board[i] = board[i];
-					new_widths[i] = widths[i];
-				}*/
+				}
 			}
 		};
 
@@ -185,6 +181,7 @@ define('state', ['piece'], function(Piece) {
 					if (board[i + bottoms[j]][px + j] != '#FFF') {
 						py = i - 1;
 						place();
+						clear_rows();
 						draw();
 						return;
 				  }
@@ -193,6 +190,7 @@ define('state', ['piece'], function(Piece) {
 			// We didn't hit anything
 			py = gheight - piece_height - 1;
 			place();
+			clear_rows();
 			draw();
 		};
 
