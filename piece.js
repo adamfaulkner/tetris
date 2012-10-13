@@ -41,6 +41,9 @@ define('piece', [], function() {
 		]
 	];
 
+	var px = 0;
+	var py = 0;
+
 	var make_rotates = function(piece, rotates) {
 		var new_piece = [];
 		// Loop through the rows, columns of the NEW piece
@@ -60,13 +63,12 @@ define('piece', [], function() {
 	};
 
 	// Choose a random piece
-	var pick_piece = function(px, gwidth) {
+	var pick_piece = function(gwidth) {
 		var index = Math.floor(Math.random() * pieces.length);
 		piece = pieces[index];
 		piece_rotates = make_rotates(piece, [piece]);
 		current_rotation = 0;
 		px = Math.min(px, gwidth - piece[0].length);
-		return px;
 	};
 
 	var rotate = function() {
@@ -79,7 +81,6 @@ define('piece', [], function() {
 	var piece_rotates;
 	// Integer referring to current rotation
 	var current_rotation;
-	pick_piece();
 
 	var get_piece = function() {
 		return piece;
@@ -87,6 +88,20 @@ define('piece', [], function() {
 
 	return { piece: get_piece,
 					 pick_piece: pick_piece,
+					 px: function(val) {
+						 if (val !== undefined) {
+							 px = val;
+						 } else {
+							 return px;
+						 }
+					 },
+					 py: function(val) {
+						 if (val !== undefined) {
+							 py = val;
+						 } else {
+							 return py;
+						 }
+					 },
 					 rotate: rotate
 				 };
 });

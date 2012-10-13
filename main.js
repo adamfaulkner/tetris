@@ -1,5 +1,6 @@
-define('main', ['state'], function(state) {
-	var game = new state.Game(document.getElementById('tetris-canvas'));
+define('main', ['state', 'display'], function(state, display) {
+	var canvas = document.getElementById('tetris-canvas');
+	var game = new state.Game(canvas);
 	window.onkeydown = function(key) {
 		if (key.keyCode == 39) {
 			// Right arrow key
@@ -14,11 +15,12 @@ define('main', ['state'], function(state) {
 			game.drop();
 		}
 	};
-	game.draw();
+	display.draw(canvas, game.board);
+
 	var loop = function() {
 		setTimeout(function() {
 			game.update();
-			game.draw();
+			display.draw(canvas, game.board);
 			loop();
 		}, 500);
 	};

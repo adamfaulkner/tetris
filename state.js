@@ -1,86 +1,50 @@
 // Set up the global state
-define('state', ['piece'], function(Piece) {
+define('state', ['piece', 'display', 'config'], function(Piece, display, config) {
 	function Game(canvas) {
 		var board = [];
 		canvas.width = 150;
 		canvas.height = 330;
-		var width = canvas.width;
-		var height = canvas.height;
-		var gwidth = 10;
-		var gheight = 22;
+		config.width = canvas.width;
+		config.height = canvas.height;
+		Piece.pick_piece(config.gwidth);
 		var widths = [];
-		for (var i = 0; i < gheight; i++) {
+		for (var i = 0; i < config.gheight; i++) {
 			var row = [];
-			for (var j = 0; j < gwidth; j++) {
+			for (var j = 0; j < config.gwidth; j++) {
 				row.push("#FFF");
 			}
 			board.push(row);
 			widths.push(0);
 		}
-		var px = 0;
-		var py = 0;
-
-		var draw = function() {
-			var bwidth = width / gwidth;
-			var bheight = height / gheight;
-			var margin = 1;
-			var ctx = canvas.getContext("2d");
-			board.forEach(function(row, i) {
-				row.forEach(function(cell, j) {
-					ctx.fillStyle = cell;
-					// We do a 1 px margin on each side
-					var x = j * bwidth + margin;
-					var y = i * bheight + margin
-					var w = bwidth - margin;
-					var h = bheight - margin;
-					ctx.fillRect(x, y, w, h);
-				});
-			});
-
-			// Don't do any collision detection here, just draw it
-			Piece.piece().forEach(function(row, i) {
-				row.forEach(function(cell, j) {
-					// This is dumb, don't do this
-					if (cell != '#FFF') {
-						ctx.fillStyle = cell;
-						var x = (px + j) * bwidth + margin;
-						var y = (py + i) * bheight + margin;
-						var w = bwidth - margin;
-						var h = bheight - margin;
-						ctx.fillRect(x, y, w, h);
-					}
-				});
-			});
-		};
 
 		var place = function() {
 			Piece.piece().forEach(function(row, i) {
 				row.forEach(function(cell, j) {
 					if (cell != '#FFF') {
-						var y = py + i;
-						var x = px + j;
+						var y = Piece.py() + i;
+						var x = Piece.px() + j;
 						board[y][x] = cell;
 						// Row clearing logic
 						widths[y]++;
 					}
 				});
 			});
-			py = 0;
-			px = Piece.pick_piece(px, gwidth);
+			Piece.pick_piece(config.gwidth);
+			Piece.py(0);
 		};
 			
 		var update = function() {
 			// update piece position
-			py += 1;
+			Piece.py(Piece.py() + 1);
 			var need_place;
 
-			if (py + Piece.piece().length > gheight) {
+			if (Piece.py + Piece.piece().length > config.gheight) {
 				need_place = true;
-				py -= 1;
+				Piece.py(Piece.py() - 1);
 			}
 
 			if (coliding()) {
-				py -= 1;
+				Piece.py(Piece.py() - 1);
 				need_place = true;
 			}
 
@@ -94,7 +58,7 @@ define('state', ['piece'], function(Piece) {
 			var coliding = false;
 			Piece.piece().forEach(function(row, i) {
 				row.forEach(function(cell, j) {
-					if (cell != '#FFF' && board[py + i][px + j] != '#FFF') {
+					if (cell != '#FFF' && board[Piece.py() + i][Piece.px() + j] != '#FFF') {
 						coliding = true;
 						return coliding;
 					}
@@ -104,42 +68,42 @@ define('state', ['piece'], function(Piece) {
 		};
 					
 		var move_right = function() {
-			if (px + Piece.piece()[0].length < gwidth) {
-				px += 1;
+			if (Piece.px() + Piece.piece()[0].length < config.gwidth) {
+				Piece.px(Piece.px() + 1);
 			}
 			if (coliding()) {
-				px -= 1;
+				Piece.px(Piece.px() - 1);
 			}
-			draw();
+			display.draw(canvas, board);
 		};
 		var move_left = function() {
-			if (px > 0) {
-				px -= 1;
+			if (Piece.px() > 0) {
+				Piece.px(Piece.px() - 1);
 			}
 			if (coliding()) {
-				px += 1;
+				Piece.px(Piece.px() + 1);
 			}
-			draw();
+			display.draw(canvas, board);
 		};
 
 		var rotate = function() {
-			var old_px = px;
+			var old_px = Piece.px();
 			Piece.rotate();
-			if (px + Piece.piece()[0].length >= gwidth) {
-				px--;
+			if (Piece.px() + Piece.piece()[0].length >= config.gwidth) {
+				Piece.px(Piece.px() - 1);
 			}
 			if (coliding()) {
-				px = old_px;
+				Piece.px(old_px);
 				Piece.rotate();
 				Piece.rotate();
 				Piece.rotate();
 			}
-			draw();
+			display.draw(canvas, board);
 		};
 
 		var new_row = function() {
 			var row = [];
-			for (var i = 0; i < gwidth; i++) {
+			for (var i = 0; i < config.gwidth; i++) {
 				row.push('#FFF');
 			}
 			return row;
@@ -151,7 +115,7 @@ define('state', ['piece'], function(Piece) {
 			var shift = 0;
 			// go bottom up to avoid extra work
 			for (var i = widths.length - 1; i >= 0; i--) {
-				while (widths[i - shift] >= gwidth) {
+				while (widths[i - shift] >= config.gwidth) {
 					shift++;
 				}
 				if (shift) {
@@ -176,26 +140,25 @@ define('state', ['piece'], function(Piece) {
 				}
 				bottoms.push(i);
 			}
-			for (var i = py; i < gheight - piece_height; i++) {
+			for (var i = Piece.py(); i < config.gheight - piece_height; i++) {
 				for (var j = 0; j < Piece.piece()[0].length; j++) {
-					if (board[i + bottoms[j]][px + j] != '#FFF') {
-						py = i - 1;
+					if (board[i + bottoms[j]][Piece.px() + j] != '#FFF') {
+						Piece.py(i - 1)
 						place();
 						clear_rows();
-						draw();
+						display.draw(canvas, board);
 						return;
 				  }
 				}
 			}
 			// We didn't hit anything
-			py = gheight - piece_height - 1;
+			Piece.py(config.gheight - piece_height - 1);
 			place();
 			clear_rows();
-			draw();
+			display.draw(canvas, board);
 		};
 
 		this.board = board;
-		this.draw = draw;
 		this.update = update;
 		this.move_right = move_right;
 		this.move_left = move_left;
