@@ -2,11 +2,13 @@
 define('state', ['piece', 'display', 'config'], function(Piece, display, config) {
 	function Game(canvas) {
 		var board = [];
+		var px = 0;
+		var py = 0;
 		canvas.width = 150;
 		canvas.height = 330;
 		config.width = canvas.width;
 		config.height = canvas.height;
-		Piece.pick_piece(config.gwidth);
+		px = Piece.pick_piece(config.gwidth, px);
 		var widths = [];
 		for (var i = 0; i < config.gheight; i++) {
 			var row = [];
@@ -21,30 +23,30 @@ define('state', ['piece', 'display', 'config'], function(Piece, display, config)
 			Piece.piece().forEach(function(row, i) {
 				row.forEach(function(cell, j) {
 					if (cell != '#FFF') {
-						var y = Piece.py() + i;
-						var x = Piece.px() + j;
+						var y = py + i;
+						var x = px + j;
 						board[y][x] = cell;
 						// Row clearing logic
 						widths[y]++;
 					}
 				});
 			});
-			Piece.pick_piece(config.gwidth);
-			Piece.py(0);
+			px = Piece.pick_piece(config.gwidth, px);
+			py = 0;
 		};
 			
 		var update = function() {
 			// update piece position
-			Piece.py(Piece.py() + 1);
+			py++;
 			var need_place;
 
-			if (Piece.py + Piece.piece().length > config.gheight) {
+			if (py + Piece.piece().length > config.gheight) {
 				need_place = true;
-				Piece.py(Piece.py() - 1);
+				py--;
 			}
 
 			if (coliding()) {
-				Piece.py(Piece.py() - 1);
+				py--;
 				need_place = true;
 			}
 
@@ -58,7 +60,7 @@ define('state', ['piece', 'display', 'config'], function(Piece, display, config)
 			var coliding = false;
 			Piece.piece().forEach(function(row, i) {
 				row.forEach(function(cell, j) {
-					if (cell != '#FFF' && board[Piece.py() + i][Piece.px() + j] != '#FFF') {
+					if (cell != '#FFF' && board[py + i][px + j] != '#FFF') {
 						coliding = true;
 						return coliding;
 					}
@@ -68,37 +70,37 @@ define('state', ['piece', 'display', 'config'], function(Piece, display, config)
 		};
 					
 		var move_right = function() {
-			if (Piece.px() + Piece.piece()[0].length < config.gwidth) {
-				Piece.px(Piece.px() + 1);
+			if (px + Piece.piece()[0].length < config.gwidth) {
+				px++;
 			}
 			if (coliding()) {
-				Piece.px(Piece.px() - 1);
+				px--;
 			}
-			display.draw(canvas, board);
+			display.draw(canvas, board, px, py);
 		};
 		var move_left = function() {
-			if (Piece.px() > 0) {
-				Piece.px(Piece.px() - 1);
+			if (px > 0) {
+				px--;
 			}
 			if (coliding()) {
-				Piece.px(Piece.px() + 1);
+				px++;
 			}
-			display.draw(canvas, board);
+			display.draw(canvas, board, px, py);
 		};
 
 		var rotate = function() {
-			var old_px = Piece.px();
+			var old_px = px;
 			Piece.rotate();
-			if (Piece.px() + Piece.piece()[0].length >= config.gwidth) {
-				Piece.px(Piece.px() - 1);
+			if (px + Piece.piece()[0].length >= config.gwidth) {
+				px--;
 			}
 			if (coliding()) {
-				Piece.px(old_px);
+				px = old_px;
 				Piece.rotate();
 				Piece.rotate();
 				Piece.rotate();
 			}
-			display.draw(canvas, board);
+			display.draw(canvas, board, px, py);
 		};
 
 		var new_row = function() {
@@ -140,22 +142,22 @@ define('state', ['piece', 'display', 'config'], function(Piece, display, config)
 				}
 				bottoms.push(i);
 			}
-			for (var i = Piece.py(); i < config.gheight - piece_height; i++) {
+			for (var i = py; i < config.gheight - piece_height; i++) {
 				for (var j = 0; j < Piece.piece()[0].length; j++) {
-					if (board[i + bottoms[j]][Piece.px() + j] != '#FFF') {
-						Piece.py(i - 1)
+					if (board[i + bottoms[j]][px + j] != '#FFF') {
+						py = i - 1;
 						place();
 						clear_rows();
-						display.draw(canvas, board);
+						display.draw(canvas, board, px, py);
 						return;
 				  }
 				}
 			}
 			// We didn't hit anything
-			Piece.py(config.gheight - piece_height - 1);
+			py = config.gheight - piece_height - 1;
 			place();
 			clear_rows();
-			display.draw(canvas, board);
+			display.draw(canvas, board, px, py);
 		};
 
 		this.board = board;
@@ -164,6 +166,12 @@ define('state', ['piece', 'display', 'config'], function(Piece, display, config)
 		this.move_left = move_left;
 		this.rotate = rotate;
 		this.drop = drop;
+		this.px = function() {
+			return px;
+		};
+		this.py = function() {
+			return py;
+		};
 	}
 	return {Game: Game};
 });

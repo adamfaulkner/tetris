@@ -1,5 +1,5 @@
 define('display', ['config', 'piece'], function(config, Piece) {
-	var draw = function(canvas, board) {
+	var draw = function(canvas, board, px, py) {
 		var bwidth = config.width / config.gwidth;
 		var bheight = config.height / config.gheight;
 		var margin = 1;
@@ -22,8 +22,8 @@ define('display', ['config', 'piece'], function(config, Piece) {
 				// This is dumb, don't do this
 				if (cell != '#FFF') {
 					ctx.fillStyle = cell;
-					var x = (Piece.px() + j) * bwidth + margin;
-					var y = (Piece.py() + i) * bheight + margin;
+					var x = (px + j) * bwidth + margin;
+					var y = (py + i) * bheight + margin;
 					var w = bwidth - margin;
 					var h = bheight - margin;
 					ctx.fillRect(x, y, w, h);

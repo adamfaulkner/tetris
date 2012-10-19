@@ -41,9 +41,6 @@ define('piece', [], function() {
 		]
 	];
 
-	var px = 0;
-	var py = 0;
-
 	var make_rotates = function(piece, rotates) {
 		var new_piece = [];
 		// Loop through the rows, columns of the NEW piece
@@ -63,12 +60,12 @@ define('piece', [], function() {
 	};
 
 	// Choose a random piece
-	var pick_piece = function(gwidth) {
+	var pick_piece = function(gwidth, px) {
 		var index = Math.floor(Math.random() * pieces.length);
 		piece = pieces[index];
 		piece_rotates = make_rotates(piece, [piece]);
 		current_rotation = 0;
-		px = Math.min(px, gwidth - piece[0].length);
+		return Math.min(px, gwidth - piece[0].length);
 	};
 
 	var rotate = function() {

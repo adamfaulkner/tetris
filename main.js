@@ -15,12 +15,12 @@ define('main', ['state', 'display'], function(state, display) {
 			game.drop();
 		}
 	};
-	display.draw(canvas, game.board);
+	display.draw(canvas, game.board, game.px(), game.py());
 
 	var loop = function() {
 		setTimeout(function() {
 			game.update();
-			display.draw(canvas, game.board);
+			display.draw(canvas, game.board, game.px(), game.py());
 			loop();
 		}, 500);
 	};
