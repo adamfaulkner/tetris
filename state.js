@@ -4,6 +4,7 @@ define('state', ['piece', 'display', 'config'], function(Piece, display, config)
 		var board = [];
 		var px = 0;
 		var py = 0;
+		var lost = false;
 		canvas.width = 150;
 		canvas.height = 330;
 		config.width = canvas.width;
@@ -23,11 +24,15 @@ define('state', ['piece', 'display', 'config'], function(Piece, display, config)
 			Piece.piece().forEach(function(row, i) {
 				row.forEach(function(cell, j) {
 					if (cell != '#FFF') {
-						var y = py + i;
-						var x = px + j;
-						board[y][x] = cell;
-						// Row clearing logic
-						widths[y]++;
+						if (py + i <= 1) {
+							lost = true;
+						} else {
+							var y = py + i;
+							var x = px + j;
+							board[y][x] = cell;
+							// Row clearing logic
+							widths[y]++;
+						}
 					}
 				});
 			});
@@ -52,7 +57,8 @@ define('state', ['piece', 'display', 'config'], function(Piece, display, config)
 
 			if (need_place) {
 				place();
-				clear_rows();
+				var rows_cleared = clear_rows();
+				return rows_cleared;
 			}
 		};
 
@@ -130,6 +136,7 @@ define('state', ['piece', 'display', 'config'], function(Piece, display, config)
 					}
 				}
 			}
+			return shift;
 		};
 
 		var drop = function() {
@@ -147,17 +154,18 @@ define('state', ['piece', 'display', 'config'], function(Piece, display, config)
 					if (board[i + bottoms[j]][px + j] != '#FFF') {
 						py = i - 1;
 						place();
-						clear_rows();
+						var rows_cleared = clear_rows();
 						display.draw(canvas, board, px, py);
-						return;
+						return rows_cleared;
 				  }
 				}
 			}
 			// We didn't hit anything
 			py = config.gheight - piece_height - 1;
 			place();
-			clear_rows();
+			var rows_cleared = clear_rows();
 			display.draw(canvas, board, px, py);
+			return rows_cleared;
 		};
 
 		this.board = board;
@@ -171,6 +179,9 @@ define('state', ['piece', 'display', 'config'], function(Piece, display, config)
 		};
 		this.py = function() {
 			return py;
+		};
+		this.lost = function() {
+			return lost;
 		};
 	}
 	return {Game: Game};
