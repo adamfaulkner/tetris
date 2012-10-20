@@ -11,13 +11,20 @@ define('state', ['piece', 'config'], function(Piece, config) {
 		config.height = canvas.height;
 		px = Piece.pick_piece(config.gwidth, px);
 		var widths = [];
-		for (var i = 0; i < config.gheight; i++) {
+		var heights = [];
+		var i, j;
+		// Initialize the board and the widths array
+		for (i = 0; i < config.gheight; i++) {
 			var row = [];
-			for (var j = 0; j < config.gwidth; j++) {
+			for (j = 0; j < config.gwidth; j++) {
 				row.push("#FFF");
 			}
 			board.push(row);
 			widths.push(0);
+		}
+		// Initialize the heights array
+		for (j = 0; j < config.gwidth; j++) {
+			heights.push(0);
 		}
 
 		var place = function() {
@@ -32,12 +39,17 @@ define('state', ['piece', 'config'], function(Piece, config) {
 							board[y][x] = cell;
 							// Row clearing logic
 							widths[y]++;
+							if (heights[x] < y) {
+								heights[x] = y;
+							}
 						}
 					}
 				});
 			});
+			var rows_cleared = clear_rows();
 			px = Piece.pick_piece(config.gwidth, px);
 			py = 0;
+			return rows_cleared;
 		};
 			
 		var update = function() {
@@ -56,8 +68,7 @@ define('state', ['piece', 'config'], function(Piece, config) {
 			}
 
 			if (need_place) {
-				place();
-				var rows_cleared = clear_rows();
+				var rows_cleared = place();
 				return rows_cleared;
 			}
 		};
@@ -108,7 +119,8 @@ define('state', ['piece', 'config'], function(Piece, config) {
 
 		var new_row = function() {
 			var row = [];
-			for (var i = 0; i < config.gwidth; i++) {
+			var i;
+			for (i = 0; i < config.gwidth; i++) {
 				row.push('#FFF');
 			}
 			return row;
@@ -119,7 +131,8 @@ define('state', ['piece', 'config'], function(Piece, config) {
 			// Shift represents the line offset for where the next board will be
 			var shift = 0;
 			// go bottom up to avoid extra work
-			for (var i = widths.length - 1; i >= 0; i--) {
+			var i;
+			for (i = widths.length - 1; i >= 0; i--) {
 				while (widths[i - shift] >= config.gwidth) {
 					shift++;
 				}
@@ -136,30 +149,35 @@ define('state', ['piece', 'config'], function(Piece, config) {
 			return shift;
 		};
 
-		var drop = function() {
+		// Where will piece p end up if dropped in column x?
+		var get_drop_position = function(p, x) {
+			// TODO: put all of this stuff on the piece class, make it create less garbage
+			// TODO: Further, make all pieces singletons, this will greatly reduce our garbage
 			var bottoms = [];
-			var piece_height = Piece.piece().length - 1;
-			for (var j = 0; j < Piece.piece()[0].length; j++) {
-				var i = piece_height;
-				while(Piece.piece()[i][j] == '#FFF' && i >= 0) {
+			var piece_height = p.length - 1;
+			var i, j, rows_cleared;
+			for (j = 0; j < p[0].length; j++) {
+				i = piece_height;
+				while(p[i][j] == '#FFF' && i >= 0) {
 					i--;
 				}
 				bottoms.push(i);
 			}
-			for (var i = py; i < config.gheight - piece_height; i++) {
-				for (var j = 0; j < Piece.piece()[0].length; j++) {
-					if (board[i + bottoms[j]][px + j] != '#FFF') {
-						py = i - 1;
-						place();
-						var rows_cleared = clear_rows();
-						return rows_cleared;
+			for (i = py; i < config.gheight - piece_height; i++) {
+				for (j = 0; j < p[0].length; j++) {
+					if (board[i + bottoms[j]][x + j] != '#FFF') {
+						// We hit something, return the current y coordinate
+						return i - 1;
 				  }
 				}
 			}
 			// We didn't hit anything
-			py = config.gheight - piece_height - 1;
-			place();
-			var rows_cleared = clear_rows();
+			return config.gheight - piece_height - 1;
+		};
+			
+		var drop = function() {
+			py = get_drop_position(Piece.piece(), px);
+			var rows_cleared = place();
 			return rows_cleared;
 		};
 
@@ -177,6 +195,12 @@ define('state', ['piece', 'config'], function(Piece, config) {
 		};
 		this.lost = function() {
 			return lost;
+		};
+		this.widths = function() {
+			return widths;
+		};
+		this.heights = function() {
+			return heights;
 		};
 	}
 	return {Game: Game};
