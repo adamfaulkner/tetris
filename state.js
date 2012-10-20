@@ -1,5 +1,5 @@
 // Set up the global state
-define('state', ['piece', 'display', 'config'], function(Piece, display, config) {
+define('state', ['piece', 'config'], function(Piece, config) {
 	function Game(canvas) {
 		var board = [];
 		var px = 0;
@@ -82,7 +82,6 @@ define('state', ['piece', 'display', 'config'], function(Piece, display, config)
 			if (coliding()) {
 				px--;
 			}
-			display.draw(canvas, board, px, py);
 		};
 		var move_left = function() {
 			if (px > 0) {
@@ -91,7 +90,6 @@ define('state', ['piece', 'display', 'config'], function(Piece, display, config)
 			if (coliding()) {
 				px++;
 			}
-			display.draw(canvas, board, px, py);
 		};
 
 		var rotate = function() {
@@ -106,7 +104,6 @@ define('state', ['piece', 'display', 'config'], function(Piece, display, config)
 				Piece.rotate();
 				Piece.rotate();
 			}
-			display.draw(canvas, board, px, py);
 		};
 
 		var new_row = function() {
@@ -155,7 +152,6 @@ define('state', ['piece', 'display', 'config'], function(Piece, display, config)
 						py = i - 1;
 						place();
 						var rows_cleared = clear_rows();
-						display.draw(canvas, board, px, py);
 						return rows_cleared;
 				  }
 				}
@@ -164,7 +160,6 @@ define('state', ['piece', 'display', 'config'], function(Piece, display, config)
 			py = config.gheight - piece_height - 1;
 			place();
 			var rows_cleared = clear_rows();
-			display.draw(canvas, board, px, py);
 			return rows_cleared;
 		};
 

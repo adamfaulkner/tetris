@@ -8,24 +8,40 @@ define('main', ['state', 'display'], function(state, display) {
 	function update_score(new_score) {
 		score_indicator.textContent = new_score;
 	}
-	window.onkeydown = function(key) {
+	function move_right() {
+		game.move_right();
+		display.draw(canvas, game.board, game.px(), game.py());
+	}
+	function move_left() {
+		game.move_left();
+		display.draw(canvas, game.board, game.px(), game.py());
+	}
+	function rotate() {
+		game.rotate();
+		display.draw(canvas, game.board, game.px(), game.py());
+	}
+	function drop() {
+		var lines_cleared = game.drop();
+		if (lines_cleared) {
+			score += lines_cleared;
+			update_score(score);
+		}
+		display.draw(canvas, game.board, game.px(), game.py());
+	}
+	document.addEventListener('keydown', function(key) {
 		if (key.keyCode == 39) {
 			// Right arrow key
-			game.move_right();
+			move_right();
 		} else if (key.keyCode == 37) {
 			// left arrow key
-			game.move_left();
+			move_left();
 		} else if (key.keyCode == 38) {
 			// up arrow key
-			game.rotate();
+			rotate();
 		} else if (key.keyCode == 32){
-			var lines_cleared = game.drop();
-			if (lines_cleared) {
-				score += lines_cleared;
-				update_score(score);
-			}
+			drop();
 		}
-	};
+	});
 	// I have no idea what I'm doing...
 	document.addEventListener('touchstart', function(evt) {
 		evt.preventDefault();
@@ -45,20 +61,16 @@ define('main', ['state', 'display'], function(state, display) {
 		if (x_moved) {
 			last_touch_x = touch.pageX;
 			if (dx < 0) {
-				game.move_left();
+				move_left();
 			} else {
-				game.move_right();
+				move_right();
 			}
 		} else if (y_moved) {
 			last_touch_y = touch.pageY;
 			if (dy < 0) {
-				game.rotate();
+				rotate();
 			} else {
-				var lines_cleared = game.drop();
-				if (lines_cleared) {
-					score += lines_cleared;
-					update_score(score);
-				}
+				drop();
 			}
 		}
 	});
