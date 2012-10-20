@@ -3,6 +3,8 @@ define('main', ['state', 'display'], function(state, display) {
 	var score_indicator = document.getElementById('score');
 	var score = 0;
 	var game = new state.Game(canvas);
+	var last_touch_x;
+	var last_touch_y;
 	function update_score(new_score) {
 		score_indicator.textContent = new_score;
 	}
@@ -24,6 +26,43 @@ define('main', ['state', 'display'], function(state, display) {
 			}
 		}
 	};
+	// I have no idea what I'm doing...
+	document.addEventListener('touchstart', function(evt) {
+		evt.preventDefault();
+		var touch = evt.touches[0];
+		last_touch_x = touch.pageX;
+		last_touch_y = touch.pageY;
+	});
+
+	// I have no idea what I'm doing...
+	document.addEventListener('touchmove', function(evt) {
+		evt.preventDefault();
+		var touch = evt.touches[0];
+		var dx = touch.pageX - last_touch_x;
+		var dy = touch.pageY - last_touch_y;
+		var x_moved = Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 100;
+		var y_moved = Math.abs(dy) > Math.abs(dx) && Math.abs(dy) > 100;
+		if (x_moved) {
+			last_touch_x = touch.pageX;
+			if (dx < 0) {
+				game.move_left();
+			} else {
+				game.move_right();
+			}
+		} else if (y_moved) {
+			last_touch_y = touch.pageY;
+			if (dy < 0) {
+				game.rotate();
+			} else {
+				var lines_cleared = game.drop();
+				if (lines_cleared) {
+					score += lines_cleared;
+					update_score(score);
+				}
+			}
+		}
+	});
+		
 	display.draw(canvas, game.board, game.px(), game.py());
 
 	var loop = function() {
