@@ -1,8 +1,10 @@
-define('main', ['state', 'display'], function(state, display) {
+define('main', ['state', 'config', 'display'], function(state, config, display) {
 	var canvas = document.getElementById('tetris-canvas');
+	canvas.width = config.width;
+	canvas.height = config.height;
 	var score_indicator = document.getElementById('score');
 	var score = 0;
-	var game = new state.Game(canvas);
+	var game = new state.Game();
 	var last_touch_x;
 	var last_touch_y;
 	function update_score(new_score) {
